@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::value::{Value, ValueArray};
+use super::value::{Value, ValueArray};
 
 #[repr(u8)]
 #[derive(Debug, Clone, PartialEq)]
@@ -9,7 +9,6 @@ pub enum OpCode {
     Constant,
     Return,
 }
-
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Chunk {
     pub count: usize,
@@ -24,12 +23,14 @@ impl Chunk {
         Self::default()
     }
 
-    pub fn write(&mut self, byte: u8) {
+    pub fn write<T: Into<u8>>(&mut self, byte: T, line: usize) {
         if self.capacity <= self.count {
             self.grow_capacity();
-            self.code.resize(self.capacity, OpCode::None as u8);
+            self.code.resize(self.capacity, OpCode::None.into());
+            self.lines.resize(self.capacity, 0)
         }
-        self.code[self.count] = byte;
+        self.code[self.count] = byte.into();
+        self.lines[self.count] = line;
         self.count += 1;
     }
 
@@ -49,6 +50,12 @@ impl Chunk {
         }
     }
 
+}
+
+impl From<OpCode> for u8 {
+    fn from(value: OpCode) -> u8 {
+        value as u8
+    }
 }
 
 impl fmt::Display for OpCode {

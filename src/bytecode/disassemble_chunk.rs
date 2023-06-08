@@ -1,7 +1,7 @@
-use crate::chunk::{Chunk, OpCode};
+use super::chunk::{Chunk, OpCode};
 
 pub fn disassemble_chunk(chunk: &Chunk, name: String) {
-    println!("\n===== {} =====", name);
+    println!("\n======= {} =======", name);
     let mut offset = 0;
     while offset < chunk.count {
         offset = disassemble_instruction(chunk, offset);
@@ -11,6 +11,13 @@ pub fn disassemble_chunk(chunk: &Chunk, name: String) {
 
 fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
     print!("{:<04} ", offset);
+
+    if offset > 0 && chunk.lines[offset] == chunk.lines[offset - 1] {
+        print!("  | ");
+    } else {
+        print!("{:<4}", chunk.lines[offset]);
+    }
+
     let instruction = chunk.code[offset];
     match instruction {
         x if x == OpCode::Return as u8 =>
@@ -31,7 +38,7 @@ fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
 }
 
 fn simple_instruction(instruction: OpCode, offset: usize) -> usize {
-    println!("{:?}", instruction);
+    println!("{}", instruction);
     offset + 1
 }
 
