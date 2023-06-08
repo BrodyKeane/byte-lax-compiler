@@ -1,32 +1,45 @@
+use std::fmt;
+
+use crate::value::{Value, ValueArray};
+
+#[repr(u8)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum OpCode {
     None,
-    OpReturn,
+    Constant,
+    Return,
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Chunk {
-    count: usize,
-    capacity: usize,
-    code: Vec<OpCode>,
+    pub count: usize,
+    pub capacity: usize,
+    pub code: Vec<u8>,
+    pub lines: Vec<usize>,
+    pub constants: ValueArray
 }
 
 impl Chunk {
     pub fn new() -> Self {
-        Chunk::default()
+        Self::default()
     }
 
-    pub fn write(&mut self, byte: OpCode) {
+    pub fn write(&mut self, byte: u8) {
         if self.capacity <= self.count {
             self.grow_capacity();
-            self.grow_code();
+            self.code.resize(self.capacity, OpCode::None as u8);
         }
         self.code[self.count] = byte;
         self.count += 1;
     }
 
     pub fn free(&mut self) {
-        *self = Chunk::default();
+        *self = Self::default();
+    }
+
+    pub fn add_constant(&mut self, value: Value) -> u8 {
+        self.constants.write(value);
+        (self.constants.count - 1) as u8
     }
 
     fn grow_capacity(&mut self) {
@@ -36,15 +49,10 @@ impl Chunk {
         }
     }
 
-    fn grow_code(&mut self) {
-        self.code.resize(self.capacity, OpCode::None)
-    }
+}
 
-    pub fn disassemble(&self, name: String) {
-        println!("== {} ==", name);
-        for (i, op) in self.code.iter().enumerate() {
-            if let OpCode::None = op {continue}
-            println!("{:<04}: {:?}", i, op);
-        }
+impl fmt::Display for OpCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
