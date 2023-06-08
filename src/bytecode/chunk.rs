@@ -9,6 +9,7 @@ pub enum OpCode {
     Constant,
     Return,
 }
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Chunk {
     pub count: usize,
@@ -55,6 +56,17 @@ impl Chunk {
 impl From<OpCode> for u8 {
     fn from(value: OpCode) -> u8 {
         value as u8
+    }
+}
+
+impl From<u8> for OpCode {
+    fn from(value: u8) -> OpCode {
+        match value {
+            x if x == OpCode::Constant.into() => OpCode::Constant,
+            x if x == OpCode::Return.into() => OpCode::Return,
+            x if x == OpCode::EOF.into() => OpCode::EOF,
+            _ => OpCode::None
+        }
     }
 }
 
